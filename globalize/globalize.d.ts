@@ -101,18 +101,38 @@ interface Cldr {
 		territory: string;
 		variant: string;
 	};
-	ee: any;
-	get: (path, separator) => any;
-	init();
+	/**
+	 * Get the item data given its path, or undefined if missing.
+	 */
+	get(path: string | string[]): string | string[] | Object | Object[];
+	init(locale: string): void;
 	locale: string;
-	main(path);
-	off(event, listener);
-	on(event, listener);
-	once(event, listener);
-	supplemental(path);
+	/**
+	 * It's an alias for .get([ "main/{languageId}", ... ]).
+	 */
+	main(path: string | string[]): string | string[] | Object | Object[];
+	/**
+	 * Remove a listener function from the specified event globally (for all instances).
+	 */
+	off(event: string, listener: Function): void;
+	/**
+	 * Add a listener function to the specified event globally (for all instances).
+	 */
+	on(event: string, listener: Function): void;
+	/**
+	 * Add a listener function to the specified event globally (for all instances). It will be automatically removed after it's first execution.
+	 */
+	once(event: string, listener: Function): void;
+	/**
+	 * It's an alias for .get([ "supplemental", ... ]).
+	 */
+	supplemental(path: string | string[]): string | string[] | Object | Object[];
 }
 
 interface Globalize {
+
+	cldr: Cldr;
+
 	/**
 	 * Globalize.load( json, ... )
 	 * @param {Object} [JSON]
