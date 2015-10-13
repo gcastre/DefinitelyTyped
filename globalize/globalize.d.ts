@@ -90,7 +90,27 @@ interface RelativeTimeFormatterOptions {
 	form?: string;
 }
 
-interface Cldr { }
+interface Cldr {
+	attributes: {
+		bundle: string;
+		language: string;
+		maxLanguageId: string;
+		minlanguageId: string;
+		region: string;
+		script: string;
+		territory: string;
+		variant: string;
+	};
+	ee: any;
+	get: (path, separator) => any;
+	init();
+	locale: string;
+	main(path);
+	off(event, listener);
+	on(event, listener);
+	once(event, listener);
+	supplemental(path);
+}
 
 interface Globalize {
 	/**
@@ -105,7 +125,7 @@ interface Globalize {
 	 * Globalize.locale()
 	 * Return the default Cldr instance.
 	 */
-	locale(): string
+	locale(): Cldr;
 
 	/**
 	 * Globalize.locale( [locale] )
