@@ -6,7 +6,8 @@
 interface DateFormatterOptions {
 	/**
 	 * String value indicating a skeleton (see description above), eg. { skeleton: "GyMMMd" }.
-	 * Skeleton provides a more flexible formatting mechanism than the predefined list full, long, medium, or short represented by date, time, or datetime. Instead, they are an open-ended list of patterns containing only date field information, and in a canonical order.
+	 * Skeleton provides a more flexible formatting mechanism than the predefined list full, long, medium, or short represented by date, time, or datetime.
+	 * Instead, they are an open-ended list of patterns containing only date field information, and in a canonical order.
 	 */
 	skeleton?: string;
 	/**
@@ -22,30 +23,43 @@ interface DateFormatterOptions {
 	 */
 	datetime?: string;
 	/**
-	 * String value indicating a machine raw pattern (anything in the "Sym." column) eg. { raw: "dd/mm" }. Note this is NOT recommended for i18n in general. Use skeleton instead.
+	 * String value indicating a machine raw pattern (anything in the "Sym." column) eg. { raw: "dd/mm" }.
+	 * Note this is NOT recommended for i18n in general. Use skeleton instead.
 	 */
 	raw?: string;
 }
 
-interface NumberFormatterOptions {
+interface CommonNumberFormatterOptions {
 	/**
 	 * Non-negative integer Number value indicating the minimum integer digits to be used. Numbers will be padded with leading zeroes if necessary.
 	 */
 	minimumIntegerDigits?: number;
 	/**
-	 * Non-negative integer Number values indicating the minimum and maximum fraction digits to be used. Numbers will be rounded or padded with trailing zeroes if necessary. Either one or both of these properties must be present. If they are, they will override minimum and maximum fraction digits derived from the CLDR patterns.
+	 * Non-negative integer Number values indicating the minimum and maximum fraction digits to be used.
+	 * Numbers will be rounded or padded with trailing zeroes if necessary.
+	 * Either one or both of these properties must be present.
+	 * If they are, they will override minimum and maximum fraction digits derived from the CLDR patterns.
 	 */
 	minimumFractionDigits?: number;
 	/**
-	 * Non-negative integer Number values indicating the minimum and maximum fraction digits to be used. Numbers will be rounded or padded with trailing zeroes if necessary. Either one or both of these properties must be present. If they are, they will override minimum and maximum fraction digits derived from the CLDR patterns.
+	 * Non-negative integer Number values indicating the minimum and maximum fraction digits to be used.
+	 * Numbers will be rounded or padded with trailing zeroes if necessary.
+	 * Either one or both of these properties must be present.
+	 * If they are, they will override minimum and maximum fraction digits derived from the CLDR patterns.
 	 */
 	maximumFractionDigits?: number;
 	/**
-	 * Positive integer Number values indicating the minimum and maximum fraction digits to be shown. Either none or both of these properties are present. If they are, they override minimum and maximum integer and fraction digits. The formatter uses however many integer and fraction digits are required to display the specified number of significant digits.
+	 * Positive integer Number values indicating the minimum and maximum fraction digits to be shown.
+	 * Either none or both of these properties are present
+	 * If they are, they override minimum and maximum integer and fraction digits.
+	 * The formatter uses however many integer and fraction digits are required to display the specified number of significant digits.
 	 */
 	minimumSignificantDigits?: number;
 	/**
-	 * Positive integer Number values indicating the minimum and maximum fraction digits to be shown. Either none or both of these properties are present. If they are, they override minimum and maximum integer and fraction digits. The formatter uses however many integer and fraction digits are required to display the specified number of significant digits.
+	 * Positive integer Number values indicating the minimum and maximum fraction digits to be shown.
+	 * Either none or both of these properties are present.
+	 * If they are, they override minimum and maximum integer and fraction digits.
+	 * The formatter uses however many integer and fraction digits are required to display the specified number of significant digits.
 	 */
 	maximumSignificantDigits?: number;
 	/**
@@ -56,8 +70,18 @@ interface NumberFormatterOptions {
 	 * Boolean (default is true) value indicating whether a grouping separator should be used.
 	 */
 	useGrouping?: boolean;
+}
+
+interface NumberFormatterOptions extends CommonNumberFormatterOptions {
 	/**
 	 * decimal (default), or percent
+	 */
+	style?: string;
+}
+
+interface CurrencyFormatterOptions extends CommonNumberFormatterOptions {
+	/**
+	 * symbol (default), accounting, code or name.
 	 */
 	style?: string;
 }
@@ -65,13 +89,6 @@ interface NumberFormatterOptions {
 interface NumberParserOptions {
 	/**
 	 * decimal (default), or percent.
-	 */
-	style?: string;
-}
-
-interface CurrencyFormatterOptions {
-	/**
-	 * symbol (default), accounting, code or name.
 	 */
 	style?: string;
 }
@@ -88,6 +105,24 @@ interface RelativeTimeFormatterOptions {
 	 * eg. "short" or "narrow". Or falsy for default long form
 	 */
 	form?: string;
+}
+
+interface ISupplemental {
+	(path: string | string[]): string | string[] | Object | Object[];
+	weekData: IWeekData;
+	timeData: ITimeData;
+}
+
+interface IWeekData {
+	(path: string | string[]): string | string[] | Object | Object[];
+	firstDay(): string;
+	minDays(): number;
+}
+
+interface ITimeData {
+	(path: string | string[]): string | string[] | Object | Object[];
+	allowed(): string;
+	preferred(): string;
 }
 
 interface Cldr {
@@ -126,7 +161,7 @@ interface Cldr {
 	/**
 	 * It's an alias for .get([ "supplemental", ... ]).
 	 */
-	supplemental(path: string | string[]): string | string[] | Object | Object[];
+	supplemental: ISupplemental;
 }
 
 interface Globalize {
