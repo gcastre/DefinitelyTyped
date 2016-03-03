@@ -40,10 +40,10 @@ declare module Redux {
         subscribe(listener: Function): Function;
     }
 
-    function createStore(reducer: Reducer, initialState?: any): Store;
+    function createStore(reducer: Reducer, initialState?: any, enhancer?: ()=>any): Store;
     function bindActionCreators<T>(actionCreators: T, dispatch: Dispatch): T;
     function combineReducers(reducers: any): Reducer;
-    function applyMiddleware(...middleware: Middleware[]): Function;
+    function applyMiddleware(...middlewares: Middleware[]): Function;
     function compose<T extends Function>(...functions: Function[]): T;
 }
 

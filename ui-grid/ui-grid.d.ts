@@ -114,11 +114,11 @@ declare module uiGrid {
             ROW: string;
             COLUMN: string;
             OPTIONS: string;
-        }
+        };
         scrollbars: {
             NEVER: number;
             ALWAYS: number;
-        }
+        };
     }
     export type IGridInstance = IGridInstanceOf<any>;
     export interface IGridInstanceOf<TEntity> {
@@ -484,6 +484,10 @@ declare module uiGrid {
          */
         appScope?: ng.IScope;
         /**
+        * returns an array of columns in the grid
+        */
+        columns: Array<IGridColumn>;
+        /**
          * returns the total column footer height
          */
         columnFooterHeight?: number;
@@ -531,9 +535,9 @@ declare module uiGrid {
     }
     export type IGridOptions = IGridOptionsOf<any>;
     export interface IGridOptionsOf<TEntity> extends cellNav.IGridOptions, edit.IGridOptions, expandable.IGridOptions,
-        exporter.IGridOptions<TEntity>, grouping.IGridOptions, importer.IGridOptions<TEntity>, 
+        exporter.IGridOptions<TEntity>, grouping.IGridOptions, importer.IGridOptions<TEntity>,
         infiniteScroll.IGridOptions, moveColumns.IGridOptions, pagination.IGridOptions, pinning.IGridOptions,
-        resizeColumns.IGridOptions, rowEdit.IGridOptions, saveState.IGridOptions, selection.IGridOptions, 
+        resizeColumns.IGridOptions, rowEdit.IGridOptions, saveState.IGridOptions, selection.IGridOptions,
         treeBase.IGridOptions<TEntity>, treeView.IGridOptions {
         /**
          * Default time in milliseconds to throttle aggregation calcuations, defaults to 500ms
@@ -605,6 +609,13 @@ declare module uiGrid {
          * @default false
          */
         enableFiltering?: boolean;
+        /**
+        * False by default. When enabled, this adds a settings icon in the top right of the grid,
+        * which floats above the column header. The menu by default gives access to show/hide columns,
+        * but can be customized to show additional actions.
+        * @default false
+        */
+        enableGridMenu?: boolean;
         /**
          * uiGridConstants.scrollbars.ALWAYS by default. This settings controls the horizontal scrollbar for the grid.
          * Supported values: uiGridConstants.scrollbars.ALWAYS, uiGridConstants.scrollbars.NEVER
@@ -719,6 +730,25 @@ declare module uiGrid {
          */
         horizontalScrollThreshold?: number;
         /**
+         * Number of rows from the end of the dataset
+         * at which infinite scroll will trigger a request
+         * for more data
+         * @default 20
+         */
+        infiniteScrollRowsFromEnd?: number;
+        /**
+         * Inform the grid of whether there are rows
+         * to load when scrolling up
+         * @default false
+         */
+        infiniteScrollUp?: boolean;
+        /**
+         * Inform the grid of whether there are rows
+         * to load scrolling down
+         * @default true
+         */
+        infiniteScrollDown?: boolean;
+        /**
          * Defaults to 200
          * @default 200
          */
@@ -796,6 +826,12 @@ declare module uiGrid {
          * @default 20
          */
         virtualizationThreshold?: number;
+        /**
+         * Disables client side filtering. When true, handle the filterChanged event and set data,
+         * defaults to false
+         * @default false
+         */
+        useExternalFiltering?: boolean;
         /**
          * Default time in milliseconds to throttle scroll events to, defaults to 70ms
          * @default 70
@@ -1015,7 +1051,13 @@ declare module uiGrid {
              * @param {scrollEndHandler} handler callback
              */
             scrollEnd: (scope: ng.IScope, handler: scrollEndHandler) => void;
-        }
+            /**
+             * is raised after the sort criteria on one or more columns have changed
+             * @param {ng.IScope} scope Grid scope
+             * @param {sortChangedHandler} handler callback
+             */
+            sortChanged: (scope: ng.IScope, handler: sortChangedHandler<TEntity>) => void;
+        };
     }
     export interface columnVisibilityChangedHandler<TEntity> {
         /**
@@ -1071,6 +1113,15 @@ declare module uiGrid {
          * @param {JQueryMouseEventObject} scrollEvent Mouse scroll event
          */
         (scrollEvent: JQueryMouseEventObject): void;
+    }
+
+    export interface sortChangedHandler<TEntity> {
+        /**
+         * Sort change event callback
+         * @param {IGridInstance} grid instance
+         * @param {IGridColumn} array of gridColumns that have sorting on them, sorted in priority order
+         */
+        (grid: IGridInstanceOf<TEntity>, columns: Array<IGridColumnOf<TEntity>>): void;
     }
 
     export module cellNav {
@@ -1160,7 +1211,7 @@ declare module uiGrid {
                  * @param {viewportKeyPressHandler} handler Callback
                  */
                 viewportKeyPress: (scope: ng.IScope, handler: viewportKeyPressHandler<TEntity>) => void;
-            }
+            };
         }
 
         export interface navigateHandler<TEntity> {
@@ -1231,7 +1282,7 @@ declare module uiGrid {
                 KEYDOWN: number;
                 CLICK: number;
                 CLEAR: number;
-            }
+            };
         }
     }
 
@@ -1291,8 +1342,8 @@ declare module uiGrid {
                reader.readAsText( files[0] );
            }
              */
-            editFileChooserCallback?: (gridRow: uiGrid.IGridRowOf<TEntity>, 
-                                       gridCol: IGridColumnOf<TEntity>, 
+            editFileChooserCallback?: (gridRow: uiGrid.IGridRowOf<TEntity>,
+                                       gridCol: IGridColumnOf<TEntity>,
                                        files: FileList) => void;
             /**
              * A bindable string value that is used when binding to edit controls instead of colDef.field
@@ -1430,7 +1481,7 @@ declare module uiGrid {
                 BEGIN_CELL_EDIT: string;
                 END_CELL_EDIT: string;
                 CANCEL_CELL_EDIT: string;
-            }
+            };
         }
     }
 
@@ -1497,7 +1548,7 @@ declare module uiGrid {
                  * @param {rowExpandedStateChangedHandler} handler
                  */
                 rowExpandedStateChanged: (scope: ng.IScope, handler: rowExpandedStateChangedHandler<TEntity>) => void;
-            }
+            };
         }
 
         export interface rowExpandedStateChangedHandler<TEntity> {
@@ -1506,6 +1557,18 @@ declare module uiGrid {
              * @param {IGridRow} row The row that was expanded
              */
             (row: IGridRowOf<TEntity>): void;
+        }
+
+        /**
+         * GridRow settings for expandable
+         */
+        export interface IGridRow {
+            /**
+             * If set to true, the row is expanded and the expanded view is visible
+             * Defaults to false
+             * @default false
+             */
+            isExpanded?: boolean;
         }
     }
 
@@ -1569,9 +1632,9 @@ declare module uiGrid {
              * @param {any} value The cell value
              * @returns {any} Formatted value
              */
-            exporterFieldCallback?: (grid: IGridInstanceOf<TEntity>, 
-                                     row: uiGrid.IGridRowOf<TEntity>, 
-                                     col: IGridColumnOf<TEntity>, 
+            exporterFieldCallback?: (grid: IGridInstanceOf<TEntity>,
+                                     row: uiGrid.IGridRowOf<TEntity>,
+                                     col: IGridColumnOf<TEntity>,
                                      value: any) => any;
             /**
              * A function to apply to the header displayNames before exporting. Useful for internationalisation,
@@ -2016,7 +2079,7 @@ declare module uiGrid {
              * This callback can be used to change the decoded value back into a code.
              * Defaults to angular.identity.
              * @param {IGridInstance} grid The grid
-             * @param {TEntity} newObject The new object as importer has created it.  Modify it and return modified 
+             * @param {TEntity} newObject The new object as importer has created it.  Modify it and return modified
              * version
              * @returns {TEntity} The modified object
              * @default angular.identity
@@ -2237,7 +2300,7 @@ declare module uiGrid {
                  * @param {columnPositionChangedHandler} handler Callback Function
                  */
                 columnPositionChanged?: (scope: ng.IScope, handler: columnPositionChangedHandler) => void;
-            }
+            };
         }
         export interface columnPositionChangedHandler {
             (colDef: IColumnDef, originalPosition: number, finalPosition: number): void;
@@ -2324,7 +2387,7 @@ declare module uiGrid {
                  * @param {paginationChangedHandler} handler Callback
                  */
                 paginationChanged: (scope: ng.IScope, handler: paginationChangedHandler) => void;
-            }
+            };
         }
 
         /**
@@ -2406,7 +2469,7 @@ declare module uiGrid {
                 LEFT: string;
                 RIGHT: string;
                 NONE: string;
-            }
+            };
         }
     }
 
@@ -2445,7 +2508,7 @@ declare module uiGrid {
                  * @param {columnSizeChangedHandler} handler Callback
                  */
                 columnSizeChanged: (scope: ng.IScope, handler: columnSizeChangedHandler) => void;
-            }
+            };
         }
 
         export interface columnSizeChangedHandler {
@@ -2531,7 +2594,7 @@ declare module uiGrid {
                  * @param {saveRowHandler} handler Callback
                  */
                 saveRow: (scope: ng.IScope, handler: saveRowHandler<TEntity>) => void;
-            }
+            };
         }
 
         export interface saveRowHandler<TEntity> {
@@ -2910,7 +2973,7 @@ declare module uiGrid {
                  * @param {rowSelectionChangedBatchHandler} handler callback
                  */
                 rowSelectionChangedBatch: (scope: ng.IScope, handler: rowSelectionChangedBatchHandler<TEntity>) => void;
-            }
+            };
         }
         export interface rowSelectionChangedHandler<TEntity> {
             /**
@@ -3143,19 +3206,19 @@ declare module uiGrid {
                  * @param {rowExpandedHandler} handler Callback
                  */
                 rowExpanded: (scope: ng.IScope, handler: rowExpandedHandler<TEntity>) => void;
-            }
+            };
         }
 
         export interface ITreeState {
             expandedState: {
                 [index: string]: string
-            }
+            };
         }
 
         export interface rowCollapsedHandler<TEntity> {
             /**
              * Row Collapsed callback
-             * @param {IGridRow} row The row that was collapsed.  You can also retrieve the grid from this row with 
+             * @param {IGridRow} row The row that was collapsed.  You can also retrieve the grid from this row with
              * row.grid
              */
             (row: IGridRowOf<TEntity>): void;
@@ -3164,7 +3227,7 @@ declare module uiGrid {
         export interface rowExpandedHandler<TEntity> {
             /**
              * Row Expanded callback
-             * @param {IGridRow} row The row that was expanded.  You can also retrieve the grid from this row with 
+             * @param {IGridRow} row The row that was expanded.  You can also retrieve the grid from this row with
              * row.grid
              */
             (row: IGridRowOf<TEntity>): void;
@@ -3212,7 +3275,7 @@ declare module uiGrid {
             MAX: string;
             MIN: string;
             AVG: string;
-        }
+        };
     }
 
     // Tree View
@@ -3366,8 +3429,8 @@ declare module uiGrid {
         new(entity: TEntity, index: number, reference: IGridInstanceOf<TEntity>): IGridRowOf<TEntity>;
     }
     export type IGridRow = IGridRowOf<any>;
-    export interface IGridRowOf<TEntity> extends cellNav.IGridRow, edit.IGridRow, exporter.IGridRow, 
-        selection.IGridRow {
+    export interface IGridRowOf<TEntity> extends cellNav.IGridRow, edit.IGridRow, exporter.IGridRow,
+        selection.IGridRow, expandable.IGridRow {
         /** A reference to an item in gridOptions.data[] */
         entity: TEntity;
         /** A reference back to the grid */
@@ -3476,6 +3539,8 @@ declare module uiGrid {
         filter?: IFilterOptions;
         /** Filters for this column. Includes 'term' property bound to filter input elements */
         filters?: Array<IFilterOptions>;
+        /** Reference to grid containing the column */
+        grid: IGridInstanceOf<TEntity>;
         name?: string;
         /** Sort on this column */
         sort?: ISortInfo;
@@ -3546,7 +3611,7 @@ declare module uiGrid {
      */
     export type IColumnDef = IColumnDefOf<any>;
     export interface IColumnDefOf<TEntity> extends cellNav.IColumnDef, edit.IColumnDef<TEntity>, exporter.IColumnDef,
-        grouping.IColumnDef, moveColumns.IColumnDef, pinning.IColumnDef, resizeColumns.IColumnDef, 
+        grouping.IColumnDef, moveColumns.IColumnDef, pinning.IColumnDef, resizeColumns.IColumnDef,
         treeBase.IColumnDef<TEntity> {
         /**
          * defaults to false
@@ -3701,6 +3766,14 @@ declare module uiGrid {
          * You may specify one of the sortingAlgorithms found in the rowSorter service.
          */
         sortCellFiltered?: boolean;
+        /**
+         *(optional) An array of sort directions, specifying the order that they should cycle through as
+         * the user repeatedly clicks on the column heading. The default is [null, uiGridConstants.ASC, uiGridConstants.DESC].
+         * Null refers to the unsorted state. This does not affect the initial sort direction; use the sort property for that.
+         * If suppressRemoveSort is also set, the unsorted state will be skipped even if it is listed here. Each direction may
+         * not appear in the list more than once (e.g. [ASC, DESC, DESC] is not allowed), and the list may not be empty.*
+         */
+        sortDirectionCycle?: Array<IUiGridConstants>;
         /** Algorithm to use for sorting this column */
         sortingAlgorithm?: (a: any, b: any) => number;
         /**
@@ -3729,7 +3802,7 @@ declare module uiGrid {
     }
 
     export interface ICellClassGetter<TEntity> {
-        (gridRow?: IGridRowOf<TEntity>, gridCol?: IGridColumnOf<TEntity>, colRenderIndex?: number): string;
+        (grid?: IGridInstanceOf<TEntity>, gridRow?: IGridRowOf<TEntity>, gridCol?: IGridColumnOf<TEntity>, rowRenderIndex?: number, colRenderIndex?: number): string;
     }
 
     export interface ICellTooltipGetter<TEntity> {
@@ -3739,7 +3812,7 @@ declare module uiGrid {
         (gridCol: IGridColumnOf<TEntity>): string;
     }
     export interface IHeaderFooterCellClassGetter<TEntity> {
-        (gridRow: IGridRowOf<TEntity>, rowRenderIndex: number, gridCol: IGridColumnOf<TEntity>, colRenderIndex: number)
+        (grid: IGridInstanceOf<TEntity>, gridRow: IGridRowOf<TEntity>, gridCol: IGridColumnOf<TEntity>, rowRenderIndex: number, colRenderIndex: number)
             : string;
     }
     export interface IMenuItem {
@@ -3792,7 +3865,7 @@ declare module uiGrid {
          * defaults to uiGridConstants.filter.INPUT, which gives a text box. If set to uiGridConstants.filter.SELECT
          * then a select box will be shown with options selectOptions
          */
-        type?: number;
+        type?: number | string;
         /**
          * options in the format [{ value: 1, label: 'male' }]. No i18n filter is provided, you need to perform the i18n
          * on the values before you provide them
@@ -3805,7 +3878,7 @@ declare module uiGrid {
         disableCancelButton?: boolean;
     }
     export interface ISelectOption {
-        value: number;
+        value: number | string;
         label: string;
     }
 

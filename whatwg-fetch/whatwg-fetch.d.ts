@@ -3,8 +3,6 @@
 // Definitions by: Ryan Graham <https://github.com/ryan-codingintrigue>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-/// <reference path="../es6-promise/es6-promise.d.ts" />
-
 declare class Request extends Body {
 	constructor(input: string|Request, init?:RequestInit);
 	method: string;
@@ -44,6 +42,7 @@ declare class Headers {
 	getAll(name: string): Array<string>;
 	has(name: string): boolean;
 	set(name: string, value: string): void;
+	forEach(callback: (value: string, name: string) => void): void;
 }
 
 declare class Body {
@@ -83,3 +82,5 @@ declare type RequestInfo = Request|string;
 interface Window {
 	fetch(url: string|Request, init?: RequestInit): Promise<Response>;
 }
+
+declare var fetch: typeof window.fetch;
